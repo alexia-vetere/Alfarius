@@ -13,45 +13,75 @@ import (
 	"github.com/spf13/viper"
 )
 
-func GetResponse(client gpt3.Client, ctx context.Context, question string, conversationHistory []string) []string {
+func appendToConversation(message string, filePath string) {
+	// Open file with append mode
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+	}
+	defer f.Close()
+
+	// Add message to file with a newline separator
+	if _, err := f.WriteString(message + "\n"); err != nil {
+	}
+	if err != nil {
+		log.Fatal("Failed to save file:", err)
+	}
+}
+
+func loadConversation(filePath string) ([]string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var conversation []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		conversation = append(conversation, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return conversation, nil
+}
+
+func GetResponse(client gpt3.Client, ctx context.Context, prompt string) {
+	var sb strings.Builder
 	err := client.CompletionStreamWithEngine(ctx, gpt3.TextDavinci003Engine, gpt3.CompletionRequest{
 		Prompt: []string{
-			"Nuestra conversación previa: \n" + "Mi actual mensaje a responder: \n" + question,
+			prompt,
 		},
 		MaxTokens:   gpt3.IntPtr(3000),
-		Stream:      false,
 		Temperature: gpt3.Float32Ptr(0.5),
 	}, func(resp *gpt3.CompletionResponse) {
 
-		response += resp.Choices[0].Text
+		//response += resp.Choices[0].Text
+		sb.WriteString(resp.Choices[0].Text)
+		//fmt.Print(response)
 		fmt.Print(resp.Choices[0].Text)
 	})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(13)
 	}
+	defer func() {
+		appendToConversation("\n"+sb.String(), filePath) // se guarda la respuesta completa en el archivo
+	}()
+
 	fmt.Printf("\n")
-	conversationHistory = append(conversationHistory, "GPT-3: "+response)
-	return conversationHistory
 }
+
+var response string
 
 type NullWriter int
 
-var response string
+const filePath = "./conversation.txt"
+const fileName = "conversation.txt"
 
 func (NullWriter) Write([]byte) (int, error) { return 0, nil }
 
 func main() {
-	//log.SetOutput(new(NullWriter))
-
-	conversationHistory := []string{
-		"Tú: Hola, ¿cómo estás?",
-		"GPT-3: Hola, estoy bien. ¿Y tú?",
-		"Tú: Estoy bien también. Conversemos como si fueras un mayordomo amable y calmado que esta dispuesto a ayudarme y escucharme atento? Quisiera que uses fraces como: 'Si, mi señorita', '¿Cómo se encuentra hoy mi damisela?', entre otras amables palabras.",
-		"GPT-3: ¡Claro que si mi damisela! ¿En que puedo ayudarla hoy?",
-		"Tú: No, no tan efusivo y alegre. Debes sonar sereno y calmado.",
-		"GPT-3: De acuerdo dama mia, estoy atento a lo que necesite. ¿De qué quiere conversar hoy?",
-	}
 
 	viper.SetConfigFile(".env")
 	viper.ReadInConfig()
@@ -81,8 +111,16 @@ func main() {
 				}
 
 				question := scanner.Text()
-				conversationHistory = append(conversationHistory, "Tú: "+question)
-				prompt := strings.Join(conversationHistory, "\n") + "\n"
+				appendToConversation("\nTú: "+question, filePath)
+
+				conversationHistory, err := loadConversation(filePath)
+
+				if err != nil {
+					log.Fatal("Failed to load file:", err)
+				}
+
+				//conversationHistory = append(conversationHistory, "\nTú: "+question)
+				prompt := strings.Join(conversationHistory, "\n")
 
 				switch question {
 				case "quit":
@@ -90,8 +128,7 @@ func main() {
 					quit = true
 
 				default:
-					conversationHistory = GetResponse(client, ctx, prompt, conversationHistory)
-					//fmt.Println(conversationHistory)
+					GetResponse(client, ctx, prompt)
 				}
 			}
 		},
