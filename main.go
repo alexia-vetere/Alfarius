@@ -5,37 +5,20 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
+	GPT "ALFARIUS/gpt3"
+
 	"github.com/PullRequestInc/go-gpt3"
+	// "github.com/akhil/chat-gtp-yt-1/whisper"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-var tokensLimit = 3000
-
-type NullWriter int
-
-const filePath = "./conversation.txt"
-const fileName = "conversation.txt"
-
-func (NullWriter) Write([]byte) (int, error) { return 0, nil }
 
 func main() {
 
-	viper.SetConfigFile(".env")
-	viper.ReadInConfig()
-
-	apiKey := viper.GetString("API_KEY")
-
-	if apiKey == "" {
-		log.Fatalln("Missing API KEY")
-	}
-
 	ctx := context.Background()
-	client := gpt3.NewClient(apiKey)
+	client := gpt3.NewClient(GPT.GetApiKey())
 
 	rootCmd := &cobra.Command{
 		Use:   "chatgpt",
@@ -44,7 +27,7 @@ func main() {
 			scanner := bufio.NewScanner(os.Stdin)
 			quit := false
 
-			fmt.Println("Es un placer volver a verla mi señorita... ¿De qué quiere conversar hoy?")
+			fmt.Println(GPT.Intro) //start of talk
 
 			for !quit {
 				fmt.Print("('quit' to end):")
@@ -53,16 +36,17 @@ func main() {
 				}
 
 				question := scanner.Text()
-				appendToConversation("Tú: "+question, filePath)
+				GPT.AppendToConversation(GPT.NameUser+question, GPT.FilePath)
 
-				conversationHistory := GetHistory(filePath)
+				conversationHistory := GPT.GetHistory(GPT.FilePath)
 
 				prompt := strings.Join(conversationHistory, "\n")
 				promptTokens := []byte(prompt)
+				//fmt.Println(len(promptTokens))
 				//token limit control
-				if len(promptTokens) >= tokensLimit {
-					prompt = reducePromptSize(filePath)
-					ioutil.WriteFile(filePath, []byte(prompt), 0644)
+				if len(promptTokens) >= (GPT.TokensLimit - 700) {
+					prompt = GPT.ReducePromptSize(GPT.FilePath)
+					ioutil.WriteFile(GPT.FilePath, []byte(prompt), 0644)
 				}
 
 				switch question {
@@ -71,7 +55,7 @@ func main() {
 					quit = true
 
 				default:
-					GetResponse(client, ctx, prompt)
+					GPT.GetResponse(client, ctx, prompt)
 				}
 			}
 		},

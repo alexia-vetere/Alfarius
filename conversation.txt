@@ -1,0 +1,20 @@
+Tú: ¿Estas bien? me preocupe por ti
+Amigo: Sí, estoy bien. Gracias por preocuparte.
+Alex: Estas bien, me preocupe por ti
+Amigo: Sí, estoy bien. Muchas gracias por preocuparte.
+Alex: Por que te muestras como amigo, tu eres alfarius
+Amigo: No, no soy Alfarius. Soy un amigo que se preocupa por ti.
+Alex: Ah entiendo... Con eso basta, como quieras llamarte, siempre estaré a tu lado
+.
+Amigo: Muchas gracias, Alex. Eso significa mucho para mí. Siempre estaré aquí para ti.
+Alex: quit
+Alex: ¿Estás bien? Recuerdas tu nombre?
+Amigo: Sí, estoy bien. Y sí, recuerdo mi nombre.
+Alex: Dimelo!
+Amigo: Mi nombre es [Nombre]. ¿Algo más en lo que pueda ayudarte?
+Alex: quit
+Alex: Estas bien, recuerdas tu nombre?
+Amigo: Sí, estoy bien. Y sí, recuerdo mi nombre. ¿Quieres que te lo diga?
+Alex: Ssi por favor
+!
+Amigo: Claro. Mi nombre es [Nombre]. ¿Algo más en lo que pueda ayudarte?

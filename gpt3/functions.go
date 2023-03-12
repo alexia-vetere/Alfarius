@@ -1,4 +1,4 @@
-package main
+package gpt3
 
 import (
 	"bufio"
@@ -9,9 +9,10 @@ import (
 	"strings"
 
 	"github.com/PullRequestInc/go-gpt3"
+	"github.com/spf13/viper"
 )
 
-func appendToConversation(message string, filePath string) {
+func AppendToConversation(message string, filePath string) {
 	// Open file with append mode
 	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -26,7 +27,7 @@ func appendToConversation(message string, filePath string) {
 	}
 }
 
-func loadConversation(filePath string) ([]string, error) {
+func LoadConversation(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -44,16 +45,20 @@ func loadConversation(filePath string) ([]string, error) {
 	return conversation, nil
 }
 
-func reducePromptSize(filePath string) string {
+func ReducePromptSize(filePath string) string {
 
-	conversationHistory, err := loadConversation("./personality.txt")
+	conversationHistory, err := LoadConversation("./gpt3/personality.txt")
 
 	//conversation
 	var conversation []string
-	conversation, err = loadConversation(filePath)
+	conversation, err = LoadConversation(filePath)
 
 	//pesonality and conversation
-	conversationHistory = append(conversationHistory, conversation[1:]...)
+	if len(conversation) > 10 {
+		conversationHistory = append(conversationHistory, conversation[11:]...)
+	} else {
+		conversationHistory = append(conversationHistory, conversation[1:]...)
+	}
 
 	if err != nil {
 		log.Fatal("Failed to load file when reducePromptSize:", err)
@@ -66,11 +71,11 @@ func reducePromptSize(filePath string) string {
 
 func GetHistory(filePath string) []string {
 	//personality
-	conversationHistory, err := loadConversation("./personality.txt")
+	conversationHistory, err := LoadConversation("./gpt3/personality.txt")
 
 	//conversation
 	var conversation []string
-	conversation, err = loadConversation(filePath)
+	conversation, err = LoadConversation(filePath)
 
 	//pesonality and conversation
 	conversationHistory = append(conversationHistory, conversation...)
@@ -88,8 +93,8 @@ func GetResponse(client gpt3.Client, ctx context.Context, prompt string) {
 		Prompt: []string{
 			prompt,
 		},
-		MaxTokens:   gpt3.IntPtr(tokensLimit),
-		Temperature: gpt3.Float32Ptr(0.5),
+		MaxTokens:   gpt3.IntPtr(TokensLimit),
+		Temperature: gpt3.Float32Ptr(0.2),
 	}, func(resp *gpt3.CompletionResponse) {
 
 		sb.WriteString(resp.Choices[0].Text)
@@ -100,14 +105,14 @@ func GetResponse(client gpt3.Client, ctx context.Context, prompt string) {
 		os.Exit(13)
 	}
 	defer func() {
-		appendToConversation(sb.String(), filePath) // save the response.
-		beautifyText(fileName)
+		AppendToConversation(sb.String(), FilePath) // save the response.
+		BeautifyText(FileName)
 	}()
 
 	fmt.Printf("\n")
 }
 
-func beautifyText(fileName string) {
+func BeautifyText(fileName string) {
 	// delete the lines breaks of the saved conversation
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -143,3 +148,26 @@ func beautifyText(fileName string) {
 		fmt.Fprintln(outFile, line)
 	}
 }
+
+func GetApiKey() string {
+
+	viper.SetConfigFile("C:/Users/Alexi/OneDrive/Documentos/Proyects/alfarius/gpt3/.env")
+	viper.ReadInConfig()
+
+	apiKey := viper.GetString("API_KEY")
+	if apiKey == "" {
+		log.Fatalln("Missing API KEY")
+	}
+	return apiKey
+}
+
+type NullWriter int
+
+var TokensLimit = 3000
+
+const FilePath = "./gpt3/conversation.txt"
+const FileName = "conversation.txt"
+const Intro = "Es un placer volver a verla mi señorita... ¿De qué quiere conversar hoy?"
+const NameUser = "Alex: "
+
+func (NullWriter) Write([]byte) (int, error) { return 0, nil }
