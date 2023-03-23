@@ -4,9 +4,6 @@ go 1.19
 
 require (
 	github.com/PullRequestInc/go-gpt3 v1.1.13
-	github.com/go-audio/audio v1.0.0
-	github.com/go-audio/wav v1.1.0
-	github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
 	github.com/sashabaranov/go-openai v1.4.2
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.15.0
@@ -14,7 +11,6 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-audio/riff v1.0.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect

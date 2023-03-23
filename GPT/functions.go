@@ -1,4 +1,4 @@
-package gpt3
+package GPT
 
 import (
 	"bufio"
@@ -47,7 +47,7 @@ func LoadConversation(filePath string) ([]string, error) {
 
 func ReducePromptSize(filePath string) string {
 
-	conversationHistory, err := LoadConversation("./gpt3/personality.txt")
+	conversationHistory, err := LoadConversation("./gpt/personality.txt")
 
 	//conversation
 	var conversation []string
@@ -71,7 +71,7 @@ func ReducePromptSize(filePath string) string {
 
 func GetHistory(filePath string) []string {
 	//personality
-	conversationHistory, err := LoadConversation("./gpt3/personality.txt")
+	conversationHistory, err := LoadConversation("./gpt/personality.txt")
 
 	//conversation
 	var conversation []string
@@ -151,7 +151,7 @@ func BeautifyText(fileName string) {
 
 func GetApiKey() string {
 
-	viper.SetConfigFile("C:/Users/Alexi/OneDrive/Documentos/Proyects/alfarius/gpt3/.env")
+	viper.SetConfigFile(".env")
 	viper.ReadInConfig()
 
 	apiKey := viper.GetString("API_KEY")
@@ -165,7 +165,7 @@ type NullWriter int
 
 var TokensLimit = 3000
 
-const FilePath = "./gpt3/conversation.txt"
+const FilePath = "./gpt/conversation.txt"
 const FileName = "conversation.txt"
 const Intro = "Es un placer volver a verla mi señorita... ¿De qué quiere conversar hoy?"
 const NameUser = "Alex: "

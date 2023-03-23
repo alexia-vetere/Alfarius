@@ -8,10 +8,9 @@ import (
 	"os"
 	"strings"
 
-	GPT "ALFARIUS/gpt3"
+	"ALFARIUS/GPT"
 
 	"github.com/PullRequestInc/go-gpt3"
-	// "github.com/akhil/chat-gtp-yt-1/whisper"
 	"github.com/spf13/cobra"
 )
 
